@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Olimpio: Łańcuch rodzinny</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(circle at 20% 10%, #3d2a63 0%, #241640 55%, #170e2b 100%);
+    color: #fff; min-height: 100vh; padding: 14px; user-select: none;
+  }
+  h1 { font-size: 1.25rem; text-align: center; letter-spacing: .5px; }
+  .pasek { display: flex; justify-content: space-between; margin: 8px 0 4px; font-weight: 700; color: #ffd76a; }
+  .opis { text-align: center; color: #d9cffc; margin: 6px 0 12px; min-height: 2.4em; font-size: .95rem; }
+  .strefa { max-width: 460px; margin: 0 auto; }
+  .sloty .slot {
+    border: 3px dashed #7b6cf6; border-radius: 14px; min-height: 52px;
+    margin: 8px 0; display: flex; align-items: center; justify-content: center;
+    position: relative; background: rgba(255,255,255,.04);
+  }
+  .slot::before {
+    content: attr(data-nr); position: absolute; left: 10px; color: #7b6cf6; font-weight: 800;
+  }
+  .pula { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; min-height: 56px; }
+  .kafel {
+    background: linear-gradient(135deg, #ffb347, #ff7b54); color: #2b1600;
+    border: 3px solid #1c1233; border-radius: 12px; padding: 10px 14px;
+    font-weight: 800; font-size: .95rem; box-shadow: 3px 3px 0 #1c1233;
+    cursor: grab; touch-action: none; text-align: center;
+  }
+  .kafel.wybrany { outline: 4px solid #ffd76a; transform: scale(1.04); }
+  .kafel.zly { background: linear-gradient(135deg, #ff8896, #e5484d); color: #fff; animation: trzes .3s; }
+  .kafel.dobry { background: linear-gradient(135deg, #7ee787, #2ea043); color: #06280d; }
+  .kafel.duch { opacity: .35; }
+  .kafel.leci { position: fixed; z-index: 10; pointer-events: none; transform: scale(1.08) rotate(-2deg); }
+  @keyframes trzes { 25% { transform: translateX(-5px);} 75% { transform: translateX(5px);} }
+  .przyciski { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+  button {
+    font: inherit; font-weight: 800; border: 3px solid #1c1233; border-radius: 999px;
+    padding: 12px 22px; background: linear-gradient(135deg, #9a6cf6, #6c4bd6); color: #fff;
+    box-shadow: 3px 3px 0 #1c1233; cursor: pointer;
+  }
+  button:disabled { opacity: .4; }
+  .wynik { text-align: center; padding: 26px 10px; }
+  .wynik h2 { color: #ffd76a; margin-bottom: 10px; font-size: 1.6rem; }
+  .wynik p { margin: 8px 0; color: #d9cffc; }
+  .duze { font-size: 2.6rem; margin: 8px 0; }
+  .info { text-align: center; color: #a08ee0; font-size: .85rem; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="strefa" id="gra">
+  <h1>🌳 ŁAŃCUCH RODZINNY</h1>
+  <div class="pasek"><span id="runda"></span><span id="punkty">🏅 0 pkt</span></div>
+  <p class="opis" id="opis"></p>
+  <div class="sloty" id="sloty"></div>
+  <div class="pula" id="pula"></div>
+  <div class="przyciski">
+    <button id="sprawdz" disabled>⚡ Sprawdź!</button>
+  </div>
+  <p class="info">Przeciągnij kafelki na miejsca (albo stuknij kafelek, potem miejsce).</p>
+</div>
+<script>
+// Rundy: elementy podane w POPRAWNEJ kolejności (od najstarszego / od początku).
+// Fakty z modułu 1 "Narodziny świata" (zweryfikowane z Parandowskim).
+const RUNDY = [
+  { tytul: "Władcy świata po kolei",
+    opis: "Kto rządził światem najpierw, a kto potem? Od pierwszego władcy!",
+    elementy: ["Uranos", "Kronos", "Zeus"] },
+  { tytul: "Trzy pokolenia",
+    opis: "Od babci do wnuka: ułóż rodzinę po kolei!",
+    elementy: ["Gaja", "Reja", "Zeus"] },
+  { tytul: "Historia małego Zeusa",
+    opis: "Ułóż wydarzenia w kolejności, w jakiej się zdarzyły.",
+    elementy: ["Kronos połyka dzieci", "Kamień w pieluszkach", "Grota na Krecie", "Środek na wymioty", "Wojna z tytanami"] },
+  { tytul: "Dary i kary",
+    opis: "Od ulepienia ludzi do nowej ludzkości: co było po czym?",
+    elementy: ["Prometeusz lepi ludzi", "Kradzież ognia", "Beczka Pandory", "Wielki potop", "Kamienie Deukaliona i Pyrry"] },
+  { tytul: "Rodzina Pandory",
+    opis: "Historia pierwszej kobiety: ułóż po kolei!",
+    elementy: ["Bogowie tworzą Pandorę", "Ślub z Epimeteuszem", "Narodziny Pyrry", "Pyrra w czółnie z Deukalionem"] },
+];
+
+let runda = 0, punkty = 0, probaWRundzie = 1, wybrany = null;
+
+const el = id => document.getElementById(id);
+
+function tasuj(lista) {
+  const kopia = [...lista];
+  for (let i = kopia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [kopia[i], kopia[j]] = [kopia[j], kopia[i]];
+  }
+  // pilnujemy, żeby start nie był przypadkiem poprawnym układem
+  return kopia.join() === lista.join() ? tasuj(lista) : kopia;
+}
+
+function pokazRunde() {
+  probaWRundzie = 1; wybrany = null;
+  const r = RUNDY[runda];
+  el("runda").textContent = `Runda ${runda + 1}/${RUNDY.length}: ${r.tytul}`;
+  el("opis").textContent = r.opis;
+  el("sloty").innerHTML = "";
+  el("pula").innerHTML = "";
+  r.elementy.forEach((_, i) => {
+    const slot = document.createElement("div");
+    slot.className = "slot"; slot.dataset.nr = i + 1;
+    slot.addEventListener("pointerup", () => klikSlot(slot));
+    el("sloty").appendChild(slot);
+  });
+  tasuj(r.elementy).forEach(tekst => el("pula").appendChild(zrobKafel(tekst)));
+  aktualizuj();
+}
+
+function zrobKafel(tekst) {
+  const k = document.createElement("div");
+  k.className = "kafel"; k.textContent = tekst;
+  k.addEventListener("pointerdown", e => startPrzeciagania(k, e));
+  return k;
+}
+
+// --- tap-tap: stuknij kafelek, potem miejsce ---
+function klikKafel(k) {
+  document.querySelectorAll(".kafel").forEach(x => x.classList.remove("wybrany"));
+  if (wybrany === k) { wybrany = null; return; }
+  wybrany = k; k.classList.add("wybrany");
+}
+function klikSlot(slot) {
+  if (!wybrany) return;
+  if (slot.firstChild) el("pula").appendChild(slot.firstChild);
+  slot.appendChild(wybrany);
+  wybrany.classList.remove("wybrany"); wybrany = null;
+  aktualizuj();
+}
+
+// --- prawdziwe przeciąganie (pointer events, działa palcem) ---
+function startPrzeciagania(k, e) {
+  e.preventDefault();
+  let ruszyl = false;
+  const duch = k;
+  const przesun = ev => {
+    if (!ruszyl) { ruszyl = true; duch.classList.add("leci"); }
+    duch.style.left = (ev.clientX - duch.offsetWidth / 2) + "px";
+    duch.style.top = (ev.clientY - duch.offsetHeight / 2) + "px";
+  };
+  const pusc = ev => {
+    window.removeEventListener("pointermove", przesun);
+    window.removeEventListener("pointerup", pusc);
+    if (!ruszyl) { klikKafel(k); return; }  // to był tap, nie drag
+    duch.classList.remove("leci"); duch.style.left = duch.style.top = "";
+    duch.style.visibility = "hidden";
+    const cel = document.elementFromPoint(ev.clientX, ev.clientY);
+    duch.style.visibility = "";
+    const slot = cel && cel.closest(".slot");
+    if (slot) {
+      if (slot.firstChild && slot.firstChild !== duch) el("pula").appendChild(slot.firstChild);
+      slot.appendChild(duch);
+    } else if (cel && cel.closest(".pula")) {
+      el("pula").appendChild(duch);
+    }
+    aktualizuj();
+  };
+  window.addEventListener("pointermove", przesun);
+  window.addEventListener("pointerup", pusc);
+}
+
+function aktualizuj() {
+  const pelne = [...document.querySelectorAll(".slot")].every(s => s.firstChild);
+  el("sprawdz").disabled = !pelne;
+}
+
+el("sprawdz").addEventListener("pointerup", () => {
+  const r = RUNDY[runda];
+  const sloty = [...document.querySelectorAll(".slot")];
+  let dobrze = true;
+  sloty.forEach((slot, i) => {
+    const ok = slot.firstChild.textContent === r.elementy[i];
+    slot.firstChild.classList.add(ok ? "dobry" : "zly");
+    if (!ok) dobrze = false;
+  });
+  if (dobrze) {
+    const zdobyte = probaWRundzie === 1 ? 3 : 1;
+    punkty += zdobyte;
+    el("punkty").textContent = `🏅 ${punkty} pkt`;
+    setTimeout(() => { runda + 1 < RUNDY.length ? (runda++, pokazRunde()) : koniec(); }, 900);
+  } else {
+    probaWRundzie++;
+    setTimeout(() => sloty.forEach(s => s.firstChild && s.firstChild.classList.remove("zly", "dobry")), 700);
+  }
+});
+
+function koniec() {
+  const max = RUNDY.length * 3;
+  const medal = punkty === max ? "🥇" : punkty >= max * 0.6 ? "🥈" : "🥉";
+  el("gra").innerHTML = `
+    <div class="wynik">
+      <div class="duze">${medal}</div>
+      <h2>Łańcuchy ułożone!</h2>
+      <p>Twój wynik: <b>${punkty}/${max} pkt</b></p>
+      <p id="statusXp">Wysyłam wynik Atenie...</p>
+      <div class="przyciski"><button onclick="location.reload()">🔁 Jeszcze raz</button></div>
+    </div>`;
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg && tg.initData) {
+    tg.sendData(JSON.stringify({ gra: "lancuch", punkty: punkty, max: max }));
+    // sendData zamyka Mini App; ten tekst zobaczy tylko przeglądarka
+  } else {
+    document.getElementById("statusXp").textContent =
+      "Grasz poza Telegramem, więc XP nie polecą do Ateny. Ale trening się liczy!";
+  }
+}
+
+if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+pokazRunde();
+</script>
+</body>
+</html>
