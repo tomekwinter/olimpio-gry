@@ -52,7 +52,17 @@
 </style>
 </head>
 <body>
-<div class="strefa" id="gra">
+<div class="strefa" id="menu">
+  <h1>🌳 ŁAŃCUCH RODZINNY</h1>
+  <p class="opis">Ułóż bogów i wydarzenia we właściwej kolejności.<br>Z czego chcesz trenować?</p>
+  <div class="przyciski" style="flex-direction: column; align-items: center;">
+    <button onclick="start('m1')">🌋 Narodziny świata (5 rund)</button>
+    <button onclick="start('m2')">🏛 Bogowie olimpijscy (5 rund)</button>
+    <button onclick="start('all')">⚡ Wszystko naraz (10 rund)</button>
+  </div>
+  <p class="info">Wskazówka: wybieraj zestaw z modułu, który masz już przeczytany!</p>
+</div>
+<div class="strefa" id="gra" style="display:none">
   <h1>🌳 ŁAŃCUCH RODZINNY</h1>
   <div class="pasek"><span id="runda"></span><span id="punkty">🏅 0 pkt</span></div>
   <p class="opis" id="opis"></p>
@@ -65,8 +75,8 @@
 </div>
 <script>
 // Rundy: elementy podane w POPRAWNEJ kolejności (od najstarszego / od początku).
-// Fakty z modułu 1 "Narodziny świata" (zweryfikowane z Parandowskim).
-const RUNDY = [
+// Fakty z modułów 1-2 (zweryfikowane z Parandowskim, rozdz. 2-3).
+const RUNDY_M1 = [
   { tytul: "Władcy świata po kolei",
     opis: "Kto rządził światem najpierw, a kto potem? Od pierwszego władcy!",
     elementy: ["Uranos", "Kronos", "Zeus"] },
@@ -83,8 +93,35 @@ const RUNDY = [
     opis: "Historia pierwszej kobiety: ułóż po kolei!",
     elementy: ["Bogowie tworzą Pandorę", "Ślub z Epimeteuszem", "Narodziny Pyrry", "Pyrra w czółnie z Deukalionem"] },
 ];
+const RUNDY_M2 = [
+  { tytul: "Pierwszy dzień Hermesa",
+    opis: "Najbardziej pracowity noworodek świata: co zrobił po kolei?",
+    elementy: ["Cytra ze skorupy żółwia", "Kradzież trzody Apollina", "Powrót przez dziurkę od klucza", "Śmiech zdradza winowajcę", "Cytra za kaduceusz"] },
+  { tytul: "Losy Hefajstosa",
+    opis: "Od Olimpu przez morze i z powrotem: ułóż po kolei!",
+    elementy: ["Obrona mamy Hery", "Zrzucenie z Olimpu", "Dziewięć lat u Tetydy", "Powrót na ośle z Dionizosem"] },
+  { tytul: "Cztery pokolenia",
+    opis: "Od prapradziadka do prawnuczki: ułóż rodzinę po kolei!",
+    elementy: ["Uranos", "Kronos", "Zeus", "Atena"] },
+  { tytul: "Feralny koncert",
+    opis: "Pojedynek muzyczny i jego skutki: co było po czym?",
+    elementy: ["Marsjas gra na fletni", "Apollo gra i śpiewa", "Midas dostaje ośle uszy", "Fryzjer krzyczy do jamki", "Trzciny zdradzają sekret"] },
+  { tytul: "Historia Psyche",
+    opis: "Miłość Erosa i Psyche: ułóż wydarzenia po kolei!",
+    elementy: ["Ludzie modlą się do Psyche", "Eros się zakochuje", "Lampka i kropla oliwy", "Eros znika, Psyche cierpi", "Zaślubiny na Olimpie"] },
+];
+const ZESTAWY = { m1: RUNDY_M1, m2: RUNDY_M2, all: [...RUNDY_M1, ...RUNDY_M2] };
 
+let RUNDY = RUNDY_M1;
 let runda = 0, punkty = 0, probaWRundzie = 1, wybrany = null;
+
+function start(zestaw) {
+  RUNDY = ZESTAWY[zestaw];
+  runda = 0; punkty = 0;
+  el("menu").style.display = "none";
+  el("gra").style.display = "";
+  pokazRunde();
+}
 
 const el = id => document.getElementById(id);
 
@@ -217,7 +254,6 @@ if (window.Telegram && window.Telegram.WebApp) {
   Telegram.WebApp.ready();
   Telegram.WebApp.expand();
 }
-pokazRunde();
 </script>
 </body>
 </html>
