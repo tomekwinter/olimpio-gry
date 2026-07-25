@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Olimpio: Wykreślanka</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(circle at 20% 10%, #3d2a63 0%, #241640 55%, #170e2b 100%);
+    color: #fff; min-height: 100vh; padding: 12px; user-select: none; overflow-x: hidden;
+  }
+  h1 { font-size: 1.2rem; text-align: center; letter-spacing: .5px; }
+  .strefa { max-width: 460px; margin: 0 auto; }
+  .pasek { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 2px; font-weight: 700; color: #ffd76a; font-size: .95rem; }
+  .opis { text-align: center; color: #d9cffc; margin: 4px 0 10px; font-size: .95rem; }
+  .info { text-align: center; color: #a08ee0; font-size: .82rem; margin-top: 12px; }
+
+  /* pasek postępu rundy */
+  .postep { height: 8px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; margin: 6px 0 10px; }
+  .postep i { display: block; height: 100%; width: 0; border-radius: 99px;
+    background: linear-gradient(90deg, #ffb347, #ffd76a); transition: width .45s cubic-bezier(.2,.9,.3,1.4); }
+
+  /* siatka liter */
+  .siatka { display: grid; gap: 4px; justify-content: center; margin: 0 auto; touch-action: none; }
+  .kratka {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.10);
+    border-radius: 10px; font-weight: 800; color: #fff;
+    width: var(--bok); height: var(--bok); font-size: calc(var(--bok) * .46);
+    transition: transform .12s, background .18s, border-color .18s;
+    animation: wpadka .28s backwards;
+  }
+  @keyframes wpadka { from { opacity: 0; transform: scale(.4) rotate(-8deg); } }
+  .kratka.zaznaczona { background: linear-gradient(135deg, #9a6cf6, #6c4bd6); border-color: #ffd76a; transform: scale(1.08); }
+  .kratka.znaleziona { background: linear-gradient(135deg, #ffb347, #ff7b54); color: #2b1600; border-color: #1c1233; }
+  .kratka.podpowiedz { animation: puls 1s ease-in-out 3; border-color: #ffd76a; }
+  .kratka.haslo { background: linear-gradient(135deg, #ffd76a, #fff3c4); color: #2b1600; border-color: #1c1233; transform: scale(1.12); box-shadow: 0 0 12px rgba(255,215,106,.7); }
+  .kratka.zgaszona { opacity: .25; }
+  .kratka.przygaszona { opacity: .45; }  /* znalezione słowa ustępują pola hasłu */
+  @keyframes puls { 50% { transform: scale(1.18); background: rgba(255,215,106,.35); } }
+  .siatka.blad { animation: trzes .32s; }
+  @keyframes trzes { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  /* lista słów */
+  .slowa { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+  .slowo {
+    background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.14);
+    border-radius: 99px; padding: 6px 12px; font-weight: 700; font-size: .85rem; color: #e7defd;
+    transition: transform .2s, opacity .2s;
+  }
+  .slowo.ok { background: linear-gradient(135deg, #7ee787, #2ea043); color: #06280d; border-color: #1c1233; text-decoration: line-through; opacity: .75; }
+  .slowo.blysk { animation: skok .45s; }
+  @keyframes skok { 40% { transform: scale(1.22) rotate(-3deg); } }
+
+  /* fakt po trafieniu */
+  .fakt {
+    min-height: 2.6em; margin: 10px auto 0; padding: 8px 12px; max-width: 420px;
+    background: rgba(255,255,255,.06); border-left: 4px solid #ffd76a; border-radius: 8px;
+    color: #efe9ff; font-size: .88rem; line-height: 1.35; opacity: 0; transition: opacity .3s;
+  }
+  .fakt.widac { opacity: 1; }
+
+  /* hasło */
+  .haslo-pasek { text-align: center; margin-top: 12px; }
+  .haslo-pasek .litery { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: center; }
+  .haslo-pasek .wyraz { display: flex; gap: 4px; }  /* wyraz nie łamie się w środku */
+  .haslo-pasek .l {
+    width: 26px; height: 32px; border-radius: 6px; background: rgba(255,255,255,.06);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; color: #ffd76a;
+  }
+  .haslo-pasek .l.jest { animation: skok .4s; background: rgba(255,215,106,.22); }
+
+  .przyciski { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  button {
+    font: inherit; font-weight: 800; border: 3px solid #1c1233; border-radius: 999px;
+    padding: 11px 20px; background: linear-gradient(135deg, #9a6cf6, #6c4bd6); color: #fff;
+    box-shadow: 3px 3px 0 #1c1233; cursor: pointer; font-size: .95rem;
+  }
+  button.zloty { background: linear-gradient(135deg, #ffb347, #ff7b54); color: #2b1600; }
+  button:disabled { opacity: .4; }
+  .wynik { text-align: center; padding: 22px 10px; }
+  .wynik h2 { color: #ffd76a; margin-bottom: 10px; font-size: 1.5rem; }
+  .wynik p { margin: 8px 0; color: #d9cffc; }
+  .duze { font-size: 2.6rem; margin: 6px 0; }
+  .kombo { color: #ffd76a; font-weight: 800; }
+
+  /* konfetti */
+  .konfetti { position: fixed; top: -12px; width: 9px; height: 14px; z-index: 30; pointer-events: none; border-radius: 2px; }
+  @keyframes leci-dol { to { transform: translateY(105vh) rotate(720deg); opacity: .2; } }
+</style>
+</head>
+<body>
+
+<div class="strefa" id="menu">
+  <h1>🔡 WYKREŚLANKA</h1>
+  <p class="opis">Znajdź w siatce ukryte słowa. Z liter, które zostaną, ułoży się hasło!<br>Z czego chcesz trenować?</p>
+  <div class="przyciski" style="flex-direction: column; align-items: center;">
+    <button onclick="start('m1')">🌋 Narodziny świata</button>
+    <button onclick="start('m2')">🏛 Bogowie olimpijscy</button>
+    <button onclick="start('all')">⚡ Wszystko naraz</button>
+  </div>
+  <p class="info">Wskazówka: wybieraj moduł, który masz już przeczytany!</p>
+</div>
+
+<div class="strefa" id="gra" style="display:none">
+  <div class="pasek"><span id="runda"></span><span id="punkty">🏅 0 pkt</span></div>
+  <div class="postep"><i id="postep"></i></div>
+  <p class="opis" id="opis"></p>
+  <div class="siatka" id="siatka"></div>
+  <div class="slowa" id="slowa"></div>
+  <div class="fakt" id="fakt"></div>
+  <div class="haslo-pasek" id="hasloPasek"></div>
+  <div class="przyciski">
+    <button id="podpowiedz">💡 Podpowiedź</button>
+    <button id="dalej" class="zloty" style="display:none">➡️ Dalej</button>
+  </div>
+  <p class="info">Przeciągnij palcem po literach: w poziomie, w pionie albo na ukos.</p>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// TREŚĆ. Każda runda: litery słów + litery hasła = DOKŁADNIE kolumny x wiersze,
+// bo słowa się nie przecinają, a z reszty liter (czytanych wierszami) powstaje
+// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-2 (za Parandowskim).
+// ---------------------------------------------------------------------------
+const RUNDY_M1 = [
+  { bohater: "Prometeusz", kolumny: 6, wiersze: 7, haslo: "OBROŃCA CZŁOWIEKA",
+    nagroda: "Prometeusz to obrońca człowieka: dał ludziom ogień i zapłacił za to najwyższą cenę.",
+    slowa: [
+      { s: "GLINA", f: "Ulepił człowieka z gliny pomieszanej ze łzami." },
+      { s: "OGIEŃ", f: "Duszę dał człowiekowi z ognia niebieskiego: iskry podkradł z rydwanu słońca." },
+      { s: "KAUKAZ", f: "Za karę Zeus kazał przykuć go do skały Kaukazu." },
+      { s: "ORZEŁ", f: "Co dzień przylatywał orzeł i wyjadał mu wątrobę, a ta odrastała przez noc." },
+      { s: "TYTAN", f: "Prometeusz był tytanem, czyli z pokolenia starszego niż bogowie olimpijscy." },
+    ] },
+  { bohater: "Amalteja", kolumny: 5, wiersze: 9, haslo: "KARMICIELKA ZEUSA",
+    nagroda: "Amalteja to karmicielka Zeusa. Z jej rogu powstał róg obfitości.",
+    slowa: [
+      { s: "AMALTEJA", f: "Koza Amalteja karmiła mlekiem małego Zeusa." },
+      { s: "GROTA", f: "Reja ukryła synka w grocie idajskiej na Krecie." },
+      { s: "KOZA", f: "Amalteja była kozą, a opiekowały się małym Zeusem nimfy górskie." },
+      { s: "MIÓD", f: "Pszczoły znosiły mu najsłodszy miód." },
+      { s: "PSZCZOŁY", f: "Dowozy jedzenia: gołębie ambrozję, orzeł nektar, pszczoły miód." },
+    ] },
+  { bohater: "Pandora", kolumny: 8, wiersze: 5, haslo: "PODSTĘPNY DAR",
+    nagroda: "Pandora była podstępnym darem: piękna z wierzchu, a w posagu same kłopoty.",
+    slowa: [
+      { s: "BECZKA", f: "Dostała glinianą, szczelnie zamkniętą beczkę, nie puszkę." },
+      { s: "NADZIEJA", f: "W wersji Hezjoda na dnie beczki została nadzieja." },
+      { s: "POSAG", f: "Beczkę dostała w posagu, czyli w ślubnym prezencie od bogów." },
+      { s: "GLINA", f: "Beczka była gliniana, tak jak pierwsi ludzie Prometeusza." },
+      { s: "ZEUS", f: "Zeus zesłał Pandorę jako karę dla ludzi za przyjęcie ognia." },
+    ] },
+  { bohater: "Kronos", kolumny: 8, wiersze: 5, haslo: "OSZUKANY OJCIEC",
+    nagroda: "Kronos sam obalił ojca, a potem dał się oszukać żonie i synowi.",
+    slowa: [
+      { s: "SIERP", f: "Żelaznym sierpem okaleczył ojca. Skąd go wziął? Parandowski tego nie zdradza." },
+      { s: "REJA", f: "Reja to jego żona. Spotkasz też pisownię Rea, obie są poprawne." },
+      { s: "KAMIEŃ", f: "Reja podała mu kamień w pieluszkach zamiast małego Zeusa." },
+      { s: "TYTAN", f: "Kronos był najmłodszym z tytanów." },
+      { s: "URANOS", f: "Uranos to jego ojciec, którego Kronos obalił." },
+    ] },
+  { bohater: "Gaja", kolumny: 5, wiersze: 9, haslo: "MATKA WSZYSTKIEGO",
+    nagroda: "Gaja to matka wszystkiego: tytanów, kiklopów, sturękich, gigantów i Tyfona.",
+    slowa: [
+      { s: "ZIEMIA", f: "Gaja to po prostu Ziemia." },
+      { s: "URANOS", f: "Uranos (Niebo) był jej mężem: pierwsza królewska para świata." },
+      { s: "GIGANCI", f: "Giganci byli synami Gai." },
+      { s: "TYFON", f: "Z zemsty zrodziła Tyfona, najstraszliwszego potwora." },
+      { s: "CHAOS", f: "Z Chaosu wyłoniła się pierwsza para: Gaja i Uranos." },
+    ] },
+];
+
+const RUNDY_M2 = [
+  { bohater: "Atena", kolumny: 6, wiersze: 7, haslo: "PATRONKA MIAST",
+    nagroda: "Polias, czyli Patronka Miast: taki przydomek nosiła Atena.",
+    slowa: [
+      { s: "SOWA", f: "Sowa, ptak Ateny, do dziś jest symbolem mądrości." },
+      { s: "TARCZA", f: "Na posągu opierała rękę na tarczy, spod której wychylał się wąż." },
+      { s: "ZBROJA", f: "Zbroję nosiła tylko w obronie słusznej sprawy." },
+      { s: "PALLAS", f: "Pallas, czyli Panna: jeden z jej przydomków." },
+      { s: "AKROPOL", f: "Jej świątynia Partenon stoi na Akropolu, wzgórzu Aten." },
+    ] },
+  { bohater: "Hermes", kolumny: 5, wiersze: 9, haslo: "PATRON ZŁODZIEI",
+    nagroda: "Hermes był patronem złodziei, kupców, mówców i gimnastyki.",
+    slowa: [
+      { s: "KADUCEUSZ", f: "Kaduceusz to laska Hermesa, z którą nigdy się nie rozstawał." },
+      { s: "PETASOS", f: "Petasos to jego podróżny kapelusz ze skrzydełkami." },
+      { s: "CYTRA", f: "Cytrę zrobił ze skorupy żółwia w dniu narodzin." },
+      { s: "ŻÓŁW", f: "Ze skorupy żółwia powstała pierwsza cytra." },
+      { s: "TRZODA", f: "Jeszcze jako noworodek wyprowadził trzodę z obory króla Admeta." },
+    ] },
+  { bohater: "Apollo", kolumny: 7, wiersze: 5, haslo: "BÓG SŁOŃCA",
+    nagroda: "Apollo to bóg słońca, muzyki, poezji i wróżb.",
+    slowa: [
+      { s: "CYTRA", f: "Grał mistrzowsko na cytrze, tej od małego Hermesa." },
+      { s: "LAUR", f: "Wieniec laurowy to jego znak. Do dziś noszą go poeci." },
+      { s: "MUZY", f: "Przewodził dziewięciu muzom." },
+      { s: "WRÓŻBY", f: "Był bogiem wyroczni i wróżb." },
+      { s: "STRZAŁY", f: "Mówiono, że jego srebrne strzały rażą znienacka." },
+    ] },
+  { bohater: "Artemida", kolumny: 7, wiersze: 5, haslo: "PANI LASÓW",
+    nagroda: "Artemida to pani lasów, a jej brat bliźniak Apollo to słońce.",
+    slowa: [
+      { s: "KOŁCZAN", f: "W sztuce to łowczyni z kołczanem i łukiem." },
+      { s: "NIMFY", f: "Po lasach biegała w orszaku nimf." },
+      { s: "ŁOWY", f: "Była królową lasów i łowów." },
+      { s: "LASY", f: "Lasy to jej królestwo." },
+      { s: "DIADEM", f: "We włosach nosi diadem w kształcie półksiężyca." },
+    ] },
+  { bohater: "Hera", kolumny: 8, wiersze: 5, haslo: "KRÓLOWA NIEBA",
+    nagroda: "Hera, królowa nieba: patronka kobiet, ślubów i macierzyństwa.",
+    slowa: [
+      { s: "PAWIE", f: "Jej rydwan ciągnął rój pawi." },
+      { s: "KUKUŁKA", f: "Na jej berle siedzi kukułka." },
+      { s: "GRANAT", f: "Jabłko granatu w jej dłoni to symbol płodności." },
+      { s: "BERŁO", f: "Na posągu w Argos trzyma berło z kukułką." },
+      { s: "ŚLUBY", f: "Modliły się do niej panny w dniu ślubu." },
+    ] },
+  { bohater: "Hefajstos", kolumny: 7, wiersze: 5, haslo: "BOSKI KOWAL",
+    nagroda: "Hefajstos, boski kowal: robił pioruny Zeusa i zbroje bogów.",
+    slowa: [
+      { s: "KUŹNIA", f: "Dniem i nocą pracuje w swojej kuźni." },
+      { s: "LEMNOS", f: "Kuźnia stoi na wyspie Lemnos albo we wnętrzu Etny." },
+      { s: "ETNA", f: "Pod Etną leży pokonany Tyfon." },
+      { s: "OGIEŃ", f: "Był bogiem ognia i nauczył ludzi obrabiania metali." },
+      { s: "MŁOT", f: "W sztuce to brodacz z młotem, pokazywany na siedząco." },
+    ] },
+  { bohater: "Afrodyta", kolumny: 8, wiersze: 5, haslo: "BOGINI MIŁOŚCI",
+    nagroda: "Afrodyta, bogini miłości, urodzona bez ojca i matki.",
+    slowa: [
+      { s: "PIANA", f: "Wyłoniła się z piany morskiej niedaleko Cypru." },
+      { s: "GOŁĘBIE", f: "Na Olimp pojechała wózkiem zaprzężonym w gołębie, nie w pawie." },
+      { s: "RÓŻE", f: "Poświęcone jej były róże, jabłka, granaty i mirty." },
+      { s: "MIRTY", f: "Mirt to jedna z jej roślin." },
+      { s: "WIOSNA", f: "Była boginią kwiatów, ogrodów, gajów i wiosny." },
+    ] },
+  { bohater: "Zeus", kolumny: 5, wiersze: 9, haslo: "BÓG NAJWYŻSZY",
+    nagroda: "Zeus jako pan nieba ogłosił się bogiem najwyższym.",
+    slowa: [
+      { s: "PIORUN", f: "Zeus to przede wszystkim pan błyskawic i piorunów." },
+      { s: "DODONA", f: "Dodona i Olimpia to dwa najświętsze miejsca jego kultu." },
+      { s: "OLIMPIA", f: "W Olimpii odbywały się igrzyska ku jego czci." },
+      { s: "HORKIOS", f: "Horkios: opiekun praw i przysiąg." },
+      { s: "KSENIOS", f: "Ksenios: obrońca gościnności." },
+    ] },
+];
+
+const ZESTAWY = { m1: RUNDY_M1, m2: RUNDY_M2, all: [...RUNDY_M1, ...RUNDY_M2] };
+const RUND_W_GRZE = 5;
+const KIERUNKI = [[0, 1], [1, 0], [1, 1], [-1, 1]];  // w prawo, w dół, na ukos
+
+let RUNDY = [], nrRundy = 0, punkty = 0, uklad = null;
+let znalezione = [], podpowiedzi = 0, kombo = 0, zaznaczenie = [], ciagnie = false;
+
+const el = id => document.getElementById(id);
+const litery = t => [...t.replace(/ /g, "")];
+
+function tasuj(lista) {
+  const k = [...lista];
+  for (let i = k.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [k[i], k[j]] = [k[j], k[i]];
+  }
+  return k;
+}
+
+// --- generator siatki ------------------------------------------------------
+
+function wszystkieMiejsca(runda, slowo) {
+  const miejsca = [];
+  for (let w = 0; w < runda.wiersze; w++) {
+    for (let k = 0; k < runda.kolumny; k++) {
+      for (const [dw, dk] of KIERUNKI) {
+        const koniecW = w + dw * (slowo.length - 1);
+        const koniecK = k + dk * (slowo.length - 1);
+        if (koniecW < 0 || koniecW >= runda.wiersze || koniecK < 0 || koniecK >= runda.kolumny) continue;
+        miejsca.push({ w, k, dw, dk });
+      }
+    }
+  }
+  return miejsca;
+}
+
+function wolneMiejsce(siatka, slowo, m) {
+  for (let i = 0; i < slowo.length; i++) {
+    if (siatka[m.w + m.dw * i][m.k + m.dk * i] !== null) return false;
+  }
+  return true;
+}
+
+/** Czy słowo daje się przeczytać w siatce więcej niż raz? (myliłoby gracza) */
+function niejednoznaczne(siatka, slowa) {
+  const wiersze = siatka.length, kolumny = siatka[0].length;
+  const linie = [];
+  for (const [dw, dk] of KIERUNKI) {
+    for (let w = 0; w < wiersze; w++) {
+      for (let k = 0; k < kolumny; k++) {
+        // start linii tylko tam, gdzie poprzednia kratka wypada poza siatkę
+        const pw = w - dw, pk = k - dk;
+        if (pw >= 0 && pw < wiersze && pk >= 0 && pk < kolumny) continue;
+        let tekst = "", cw = w, ck = k;
+        while (cw >= 0 && cw < wiersze && ck >= 0 && ck < kolumny) {
+          tekst += siatka[cw][ck].litera;
+          cw += dw; ck += dk;
+        }
+        linie.push(tekst);
+      }
+    }
+  }
+  return slowa.some(({ s }) => {
+    const wspak = [...s].reverse().join("");
+    let ile = 0;
+    for (const linia of linie) {
+      for (let i = 0; i + s.length <= linia.length; i++) {
+        const wycinek = linia.slice(i, i + s.length);
+        if (wycinek === s || wycinek === wspak) ile++;
+      }
+    }
+    return ile !== 1;
+  });
+}
+
+function ulozSiatke(runda) {
+  const literyHasla = litery(runda.haslo);
+  const posortowane = [...runda.slowa].sort((a, b) => b.s.length - a.s.length);
+
+  for (let proba = 0; proba < 500; proba++) {
+    const siatka = Array.from({ length: runda.wiersze }, () => Array(runda.kolumny).fill(null));
+    const pozycje = {};
+    let ok = true;
+
+    for (const { s } of posortowane) {
+      const wolne = tasuj(wszystkieMiejsca(runda, s)).filter(m => wolneMiejsce(siatka, s, m));
+      if (!wolne.length) { ok = false; break; }
+      const m = wolne[0];
+      pozycje[s] = [];
+      [...s].forEach((litera, i) => {
+        const w = m.w + m.dw * i, k = m.k + m.dk * i;
+        siatka[w][k] = { litera, slowo: s };
+        pozycje[s].push(w * runda.kolumny + k);
+      });
+    }
+    if (!ok) continue;
+
+    // reszta kratek (czytana wierszami) to hasło
+    const puste = [];
+    for (let w = 0; w < runda.wiersze; w++) {
+      for (let k = 0; k < runda.kolumny; k++) if (siatka[w][k] === null) puste.push([w, k]);
+    }
+    if (puste.length !== literyHasla.length) continue;
+    puste.forEach(([w, k], i) => { siatka[w][k] = { litera: literyHasla[i], haslo: true }; });
+
+    if (niejednoznaczne(siatka, runda.slowa)) continue;
+    return { siatka, pozycje, kratkiHasla: puste.map(([w, k]) => w * runda.kolumny + k) };
+  }
+  return null;
+}
+
+// --- Telegram: haptyka (bez dźwięku, decyzja zespołu) ----------------------
+
+const tg = window.Telegram && window.Telegram.WebApp;
+function drgnij(rodzaj) {
+  const h = tg && tg.HapticFeedback;
+  if (!h) return;
+  try {
+    if (rodzaj === "ok") h.notificationOccurred("success");
+    else if (rodzaj === "zle") h.notificationOccurred("error");
+    else h.impactOccurred(rodzaj === "mocno" ? "medium" : "light");
+  } catch (e) { /* starsza wersja Telegrama: trudno */ }
+}
+
+// --- przebieg gry ----------------------------------------------------------
+
+function start(zestaw) {
+  RUNDY = tasuj(ZESTAWY[zestaw]).slice(0, RUND_W_GRZE);
+  nrRundy = 0; punkty = 0;
+  el("menu").style.display = "none";
+  el("gra").style.display = "";
+  pokazRunde();
+}
+
+function pokazRunde() {
+  const runda = RUNDY[nrRundy];
+  uklad = ulozSiatke(runda);
+  if (!uklad) {  // nie powinno się zdarzyć: rundy są sprawdzone autotestem
+    nrRundy + 1 < RUNDY.length ? (nrRundy++, pokazRunde()) : koniec();
+    return;
+  }
+  znalezione = []; podpowiedzi = 0; kombo = 0; zaznaczenie = [];
+
+  el("runda").textContent = `Runda ${nrRundy + 1}/${RUNDY.length}: ${runda.bohater}`;
+  el("punkty").textContent = `🏅 ${punkty} pkt`;
+  el("opis").textContent = `${runda.bohater}: znajdź ${runda.slowa.length} ukrytych słów.`;
+  el("fakt").className = "fakt";
+  el("fakt").textContent = "";
+  el("dalej").style.display = "none";
+  el("podpowiedz").style.display = "";
+  el("podpowiedz").disabled = false;
+  el("hasloPasek").innerHTML = "";
+  rysujPostep();
+
+  const siatka = el("siatka");
+  siatka.className = "siatka";
+  siatka.style.gridTemplateColumns = `repeat(${runda.kolumny}, var(--bok))`;
+  siatka.style.setProperty("--bok", `min(${Math.floor(88 / runda.kolumny)}vw, 46px)`);
+  siatka.innerHTML = "";
+  uklad.siatka.flat().forEach((kratka, i) => {
+    const d = document.createElement("div");
+    d.className = "kratka";
+    d.textContent = kratka.litera;
+    d.dataset.i = i;
+    d.style.animationDelay = (i * 8) + "ms";
+    siatka.appendChild(d);
+  });
+
+  const lista = el("slowa");
+  lista.innerHTML = "";
+  runda.slowa.forEach(({ s }) => {
+    const d = document.createElement("div");
+    d.className = "slowo";
+    d.dataset.slowo = s;
+    d.textContent = s;
+    lista.appendChild(d);
+  });
+}
+
+function rysujPostep() {
+  const runda = RUNDY[nrRundy];
+  el("postep").style.width = (100 * znalezione.length / runda.slowa.length) + "%";
+}
+
+// --- zaznaczanie palcem ----------------------------------------------------
+
+function kratkaZPunktu(x, y) {
+  const cel = document.elementFromPoint(x, y);
+  return cel && cel.classList.contains("kratka") ? cel : null;
+}
+
+function ustawSciezke(od, do_) {
+  const kolumny = RUNDY[nrRundy].kolumny;
+  const w1 = Math.floor(od / kolumny), k1 = od % kolumny;
+  const w2 = Math.floor(do_ / kolumny), k2 = do_ % kolumny;
+  const dw = Math.sign(w2 - w1), dk = Math.sign(k2 - k1);
+  const dlugosc = Math.max(Math.abs(w2 - w1), Math.abs(k2 - k1)) + 1;
+  // tylko linia prosta: poziom, pion albo ukos
+  if (w1 !== w2 && k1 !== k2 && Math.abs(w2 - w1) !== Math.abs(k2 - k1)) return;
+
+  zaznaczenie = [];
+  for (let i = 0; i < dlugosc; i++) zaznaczenie.push((w1 + dw * i) * kolumny + (k1 + dk * i));
+  odswiezZaznaczenie();
+}
+
+function odswiezZaznaczenie() {
+  document.querySelectorAll(".kratka").forEach(k => {
+    k.classList.toggle("zaznaczona", zaznaczenie.includes(+k.dataset.i));
+  });
+}
+
+el("siatka").addEventListener("pointerdown", e => {
+  const kratka = kratkaZPunktu(e.clientX, e.clientY);
+  if (!kratka) return;
+  e.preventDefault();
+  ciagnie = true;
+  zaznaczenie = [+kratka.dataset.i];
+  odswiezZaznaczenie();
+  drgnij("lekko");
+});
+
+window.addEventListener("pointermove", e => {
+  if (!ciagnie) return;
+  const kratka = kratkaZPunktu(e.clientX, e.clientY);
+  if (kratka) ustawSciezke(zaznaczenie[0], +kratka.dataset.i);
+});
+
+window.addEventListener("pointerup", () => {
+  if (!ciagnie) return;
+  ciagnie = false;
+  sprawdzZaznaczenie();
+  zaznaczenie = [];
+  odswiezZaznaczenie();
+});
+
+function sprawdzZaznaczenie() {
+  if (zaznaczenie.length < 2) return;
+  const runda = RUNDY[nrRundy];
+  const tekst = zaznaczenie.map(i => uklad.siatka.flat()[i].litera).join("");
+  const wspak = [...tekst].reverse().join("");
+
+  const trafione = runda.slowa.find(
+    ({ s }) => !znalezione.includes(s) && (s === tekst || s === wspak)
+  );
+  if (!trafione) {
+    kombo = 0;
+    drgnij("zle");
+    el("siatka").classList.add("blad");
+    setTimeout(() => el("siatka").classList.remove("blad"), 340);
+    return;
+  }
+
+  znalezione.push(trafione.s);
+  kombo++;
+  drgnij("ok");
+  zaznaczenie.forEach(i => {
+    const k = document.querySelector(`.kratka[data-i="${i}"]`);
+    k.classList.add("znaleziona");
+    k.classList.remove("podpowiedz");
+  });
+  const chip = document.querySelector(`.slowo[data-slowo="${trafione.s}"]`);
+  chip.classList.add("ok", "blysk");
+  setTimeout(() => chip.classList.remove("blysk"), 460);
+
+  const dopisek = kombo >= 3 ? ` <span class="kombo">🔥 seria ${kombo}!</span>` : "";
+  el("fakt").innerHTML = `<b>${trafione.s}:</b> ${trafione.f}${dopisek}`;
+  el("fakt").classList.add("widac");
+  rysujPostep();
+
+  if (znalezione.length === runda.slowa.length) setTimeout(odslonHaslo, 500);
+}
+
+// --- finał rundy: z reszty liter powstaje hasło ----------------------------
+
+function odslonHaslo() {
+  const runda = RUNDY[nrRundy];
+  el("podpowiedz").disabled = true;
+  document.querySelectorAll(".kratka.znaleziona").forEach(k => k.classList.add("przygaszona"));
+
+  const pasek = el("hasloPasek");
+  pasek.innerHTML = '<div class="opis">Zostały litery... a z nich hasło:</div><div class="litery" id="literyHasla"></div>';
+  const rzad = el("literyHasla");
+
+  // puste pola na litery, pogrupowane w wyrazy (żeby wyraz nie pękał w połowie)
+  const pola = [];
+  runda.haslo.split(" ").forEach(wyraz => {
+    const grupa = document.createElement("div");
+    grupa.className = "wyraz";
+    [...wyraz].forEach(() => {
+      const d = document.createElement("div");
+      d.className = "l";
+      grupa.appendChild(d);
+      pola.push(d);
+    });
+    rzad.appendChild(grupa);
+  });
+
+  // litery zapalają się po kolei: w siatce i w haśle naraz
+  const znaki = [...runda.haslo.replace(/ /g, "")];
+  znaki.forEach((z, i) => {
+    setTimeout(() => {
+      const k = document.querySelector(`.kratka[data-i="${uklad.kratkiHasla[i]}"]`);
+      k.classList.add("haslo");
+      pola[i].textContent = z;
+      pola[i].classList.add("jest");
+      drgnij("lekko");
+    }, 90 * (i + 1));
+  });
+  const nrKratki = znaki.length;
+
+  setTimeout(() => {
+    const zdobyte = podpowiedzi === 0 ? 3 : (podpowiedzi === 1 ? 2 : 1);
+    punkty += zdobyte;
+    el("punkty").textContent = `🏅 ${punkty} pkt`;
+    el("fakt").innerHTML = `🎉 <b>${runda.haslo}!</b> ${runda.nagroda} <b>+${zdobyte} pkt</b>`;
+    el("podpowiedz").style.display = "none";
+    el("dalej").style.display = "";
+    el("dalej").textContent = nrRundy + 1 < RUNDY.length ? "➡️ Następna runda" : "🏁 Podsumowanie";
+    drgnij("mocno");
+    konfetti(18);
+  }, 90 * (nrKratki + 2));
+}
+
+el("dalej").addEventListener("click", () => {
+  nrRundy + 1 < RUNDY.length ? (nrRundy++, pokazRunde()) : koniec();
+});
+
+el("podpowiedz").addEventListener("click", () => {
+  const runda = RUNDY[nrRundy];
+  const brakujace = runda.slowa.filter(({ s }) => !znalezione.includes(s));
+  if (!brakujace.length) return;
+  podpowiedzi++;
+  kombo = 0;
+  const cel = brakujace[Math.floor(Math.random() * brakujace.length)];
+  const pierwsza = uklad.pozycje[cel.s][0];
+  const k = document.querySelector(`.kratka[data-i="${pierwsza}"]`);
+  k.classList.add("podpowiedz");
+  el("fakt").innerHTML = `💡 Słowo <b>${cel.s}</b> zaczyna się w podświetlonej kratce. (Za podpowiedzi mniej punktów.)`;
+  el("fakt").classList.add("widac");
+  drgnij("lekko");
+});
+
+// --- konfetti --------------------------------------------------------------
+
+function konfetti(ile) {
+  const kolory = ["#ffd76a", "#ffb347", "#7ee787", "#9a6cf6", "#ff7b54"];
+  for (let i = 0; i < ile; i++) {
+    const d = document.createElement("div");
+    d.className = "konfetti";
+    d.style.left = Math.random() * 100 + "vw";
+    d.style.background = kolory[i % kolory.length];
+    d.style.animation = `leci-dol ${1.4 + Math.random()}s ${Math.random() * .4}s linear forwards`;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 2800);
+  }
+}
+
+// --- koniec gry ------------------------------------------------------------
+
+function koniec() {
+  const max = RUNDY.length * 3;
+  const medal = punkty === max ? "🥇" : punkty >= max * 0.6 ? "🥈" : "🥉";
+  konfetti(30);
+  el("gra").innerHTML = `
+    <div class="wynik">
+      <div class="duze">${medal}</div>
+      <h2>Wszystkie hasła odkryte!</h2>
+      <p>Twój wynik: <b>${punkty}/${max} pkt</b></p>
+      <p id="statusXp">Wysyłam wynik Atenie...</p>
+      <div class="przyciski"><button onclick="location.reload()">🔁 Jeszcze raz</button></div>
+    </div>`;
+  if (tg && tg.initData) {
+    tg.sendData(JSON.stringify({ gra: "wykreslanka", punkty: punkty, max: max }));
+    // sendData zamyka Mini App; ten tekst zobaczy tylko przeglądarka
+  } else {
+    el("statusXp").textContent =
+      "Grasz poza Telegramem, więc XP nie polecą do Ateny. Ale trening się liczy!";
+  }
+}
+
+// --- autotest generatora (otwórz stronę z ?test=1) -------------------------
+
+function autotest(powtorzen = 150) {
+  const raport = [];
+  for (const runda of ZESTAWY.all) {
+    let bledy = 0;
+    for (let i = 0; i < powtorzen; i++) {
+      const u = ulozSiatke(runda);
+      if (!u) { bledy++; continue; }
+      const odczytaneHaslo = u.kratkiHasla.map(i => u.siatka.flat()[i].litera).join("");
+      if (odczytaneHaslo !== runda.haslo.replace(/ /g, "")) bledy++;
+      if (Object.keys(u.pozycje).length !== runda.slowa.length) bledy++;
+    }
+    raport.push(`${bledy ? "BŁĄD" : "OK  "} ${runda.bohater}: ${powtorzen - bledy}/${powtorzen}`);
+  }
+  document.body.innerHTML = "<pre style='font-size:14px;line-height:1.6'>" + raport.join("\n") + "</pre>";
+}
+
+if (tg) { tg.ready(); tg.expand(); }
+if (location.search.includes("test=1")) autotest();
+</script>
+</body>
+</html>

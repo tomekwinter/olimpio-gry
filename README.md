@@ -6,6 +6,7 @@ rodzinnego projektu do nauki do konkursów szkolnych.
 | Gra | Plik | Opis |
 |---|---|---|
 | 🌳 Łańcuch rodzinny | `lancuch.html` | Ułóż bogów, pokolenia i wydarzenia mitologii we właściwej kolejności |
+| 🔡 Wykreślanka | `wykreslanka.html` | Znajdź w siatce ukryte słowa, a z liter, które zostaną, ułóż hasło |
 
 Hosting: GitHub Pages. Źródło gier żyje w prywatnym repo bota (`olimpio/webapp/`),
 a ten katalog to artefakt wdrożeniowy: deploy = skopiuj plik i wypchnij.
