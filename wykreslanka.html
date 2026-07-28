@@ -102,6 +102,7 @@
     <button onclick="start('m2')">🏛 Bogowie olimpijscy</button>
     <button onclick="start('m3')">🌾 Bogowie ziemscy</button>
     <button onclick="start('m4')">💀 Królestwo piekieł</button>
+    <button onclick="start('m5')">💬 Powiedzenia</button>
     <button onclick="start('all')">⚡ Wszystko naraz</button>
   </div>
   <p class="info">Wskazówka: wybieraj moduł, który masz już przeczytany!</p>
@@ -126,7 +127,7 @@
 // ---------------------------------------------------------------------------
 // TREŚĆ. Każda runda: litery słów + litery hasła = DOKŁADNIE kolumny x wiersze,
 // bo słowa się nie przecinają, a z reszty liter (czytanych wierszami) powstaje
-// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-4 (za Parandowskim).
+// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-5 (za Parandowskim).
 // ---------------------------------------------------------------------------
 const RUNDY_M1 = [
   { bohater: "Prometeusz", kolumny: 6, wiersze: 7, haslo: "OBROŃCA CZŁOWIEKA",
@@ -366,9 +367,58 @@ const RUNDY_M4 = [
     ] },
 ];
 
+
+const RUNDY_M5 = [
+  { bohater: "Powiedzenia z Olimpu", kolumny: 5, wiersze: 9, haslo: "OLIMPIJSKI SPOKÓJ",
+    nagroda: "Olimpijski spokój to spokój niewzruszony, którego nic nie potrafi zburzyć.",
+    slowa: [
+      { s: "EGIDA", f: "Tarcza Zeusa. Być pod czyjąś egidą znaczy być pod czyjąś opieką." },
+      { s: "MUZA", f: "Być czyjąś muzą znaczy być dla kogoś natchnieniem. Dziesiąta muza to film." },
+      { s: "OGNISKO", f: "Dbać o domowe ognisko znaczy troszczyć się o dom i rodzinę. Od Hestii." },
+      { s: "NEKTAR", f: "Napój bogów. Dziś mówimy tak o czymś przepysznym, podobnie jak o ambrozji." },
+      { s: "OLIMPIA", f: "Miejsce igrzysk ku czci Zeusa. Stąd olimpiada i olimpijczyk." },
+    ] },
+  { bohater: "Powiedzenia z ziemi", kolumny: 7, wiersze: 6, haslo: "STRACH PANICZNY",
+    nagroda: "Strach paniczny to nagły, ogromny strach. Nazwę dał mu bożek Pan.",
+    slowa: [
+      { s: "NARCYZ", f: "Narcyzem nazwiemy kogoś zapatrzonego w siebie. Uwaga: nie tulipanem!" },
+      { s: "HIGIENA", f: "Od Higiei, bogini zdrowia, córki Asklepiosa." },
+      { s: "ESKULAP", f: "Żartobliwie: lekarz. Od Asklepiosa, po rzymsku Eskulapa." },
+      { s: "ECHO", f: "Odbić się szerokim echem znaczy wywołać wielki oddźwięk." },
+      { s: "FLET", f: "Fujarka Pana z siedmiu piszczałek. To przy niej tańczyły nimfy." },
+    ] },
+  { bohater: "Powiedzenia z podziemia", kolumny: 7, wiersze: 6, haslo: "PRACA BEZ EFEKTU",
+    nagroda: "Syzyfowa praca to praca bez końca i bez efektu.",
+    slowa: [
+      { s: "SYZYF", f: "Wtacza kamień, który zawsze spada tuż przed szczytem." },
+      { s: "TANTAL", f: "Męki Tantala to coś upragnionego tuż obok, czego nie da się dostać." },
+      { s: "DANAIDY", f: "Beczka Danaid to wysiłek daremny: woda leci przez sito do beczki bez dna." },
+      { s: "CERBER", f: "Cerberem nazwiemy srogiego, nieprzejednanego strażnika." },
+      { s: "LETE", f: "Rzeka zapomnienia. Stąd powiedzenie o pójściu w niepamięć." },
+    ] },
+  { bohater: "Powiedzenia od bohaterów", kolumny: 8, wiersze: 5, haslo: "NIĆ ARIADNY",
+    nagroda: "Nić Ariadny to pomoc, która wyprowadza z trudnej sytuacji.",
+    slowa: [
+      { s: "AUGIASZ", f: "Stajnia Augiasza to metafora wielkiego bałaganu i zaniedbania." },
+      { s: "HYDRA", f: "Odradzać się jak hydra znaczy wracać mimo walki." },
+      { s: "ATLAS", f: "Dźwigać coś na barkach jak Atlas. Od jego imienia mamy też zbiór map." },
+      { s: "PEGAZ", f: "Dosiąść Pegaza znaczy poczuć natchnienie." },
+      { s: "LABIRYNT", f: "Plątanina, w której łatwo zabłądzić. Tezeusz wyszedł z niej po nici." },
+    ] },
+  { bohater: "Powiedzenia trojańskie", kolumny: 8, wiersze: 6, haslo: "KOŃ TROJAŃSKI",
+    nagroda: "Koń trojański to niebezpieczny dar, podstęp ukryty w czymś niewinnym.",
+    slowa: [
+      { s: "SYRENY", f: "Syreni śpiew to coś, co pięknie kusi i prowadzi do zguby." },
+      { s: "ODYSEJA", f: "Długa tułaczka pełna przygód. Od dziesięcioletniej drogi Odyseusza." },
+      { s: "KASANDRA", f: "Ktoś, kto przepowiada nieszczęście, a nikt mu nie wierzy." },
+      { s: "PENELOPA", f: "Tkanina Penelopy to praca celowo przeciągana." },
+      { s: "LAOKOON", f: "Kapłan, który ostrzegał przed koniem. Udusiły go węże z morza." },
+    ] },
+];
+
 const ZESTAWY = {
-  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4,
-  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4],
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4, m5: RUNDY_M5,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4, ...RUNDY_M5],
 };
 const RUND_W_GRZE = 5;
 const KIERUNKI = [[0, 1], [1, 0], [1, 1], [-1, 1]];  // w prawo, w dół, na ukos

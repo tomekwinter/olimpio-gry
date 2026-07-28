@@ -82,7 +82,8 @@
     <button onclick="start('m2')">🏛 Bogowie olimpijscy (5 rund)</button>
     <button onclick="start('m3')">🌾 Bogowie ziemscy (5 rund)</button>
     <button onclick="start('m4')">💀 Królestwo piekieł (5 rund)</button>
-    <button onclick="start('all')">⚡ Wszystko naraz (20 rund)</button>
+    <button onclick="start('m5')">💬 Powiedzenia (5 rund)</button>
+    <button onclick="start('all')">⚡ Wszystko naraz (25 rund)</button>
   </div>
   <p class="info">Wskazówka: wybieraj zestaw z modułu, który masz już przeczytany!</p>
 </div>
@@ -101,7 +102,7 @@
 </div>
 <script>
 // Rundy: elementy podane w POPRAWNEJ kolejności (od najstarszego / od początku).
-// Fakty z modułów 1-4 (zweryfikowane z Parandowskim, rozdz. 2, 3, 5, 7-9).
+// Fakty z modułów 1-5 (zweryfikowane z Parandowskim, rozdz. 2, 3, 5, 7-10).
 const RUNDY_M1 = [
   { tytul: "Władcy świata po kolei",
     opis: "Kto rządził światem najpierw, a kto potem? Od pierwszego władcy!",
@@ -190,9 +191,31 @@ const RUNDY_M4 = [
     wyjasnienie: "Najpierw prośba Ajgiptosa i wesele, potem rozkaz ojca, a sita i beczka bez dna to kara po śmierci.",
     elementy: ["Prośba Ajgiptosa o ręce córek", "Wesele pięćdziesięciu par", "Rozkaz Danaosa dla córek", "Śmierć mężów w noc poślubną", "Sita i beczka bez dna"] },
 ];
+const RUNDY_M5 = [
+  { tytul: "Od jabłka do konia",
+    opis: "Jak z jednego jabłka zrobiła się wojna? Ułóż wydarzenia po kolei!",
+    wyjasnienie: "Wszystko zaczęło się od wesela bez zaproszenia dla Eris. Jabłko niezgody było pierwsze, koń trojański ostatni.",
+    elementy: ["Wesele bez zaproszenia dla Eris", "Złote jabłko dla najpiękniejszej", "Kłótnia trzech bogiń", "Dziesięć lat wojny pod Troją", "Drewniany koń w bramie miasta"] },
+  { tytul: "Droga Odyseusza do domu",
+    opis: "Od podstępu z koniem do turnieju z łukiem. Co było po czym?",
+    wyjasnienie: "Podstęp z koniem kończy wojnę i dopiero wtedy zaczyna się tułaczka. Łuk jest na samym końcu, już na Itace.",
+    elementy: ["Podstęp z drewnianym koniem", "Wyspa syren i wosk w uszach", "Skylla i Charybda", "Powrót na Itakę", "Turniej z łukiem i dwunastoma toporami"] },
+  { tytul: "Prace Heraklesa",
+    opis: "Ułóż zadania bohatera w kolejności, w jakiej je wykonywał.",
+    wyjasnienie: "Hydra była drugą pracą, stajnia Augiasza piątą, złote jabłka jedenastą, a Cerber dwunastą i ostatnią.",
+    elementy: ["Hydra lernejska", "Stajnia Augiasza", "Złote jabłka Hesperyd", "Cerber wyprowadzony z podziemia"] },
+  { tytul: "Kłębek Ariadny",
+    opis: "Jak Tezeusz wyszedł z labiryntu? Ułóż po kolei!",
+    wyjasnienie: "Najpierw kłębek od Ariadny, potem nić przywiązana u wejścia, a dopiero na końcu droga powrotna po nici.",
+    elementy: ["Tezeusz na dworze Minosa", "Kłębek nici od Ariadny", "Nić przywiązana u wejścia", "Zabicie Minotaura", "Powrót po napiętej nici"] },
+  { tytul: "Zemsta centaura",
+    opis: "Skąd wzięło się powiedzenie o koszuli Dejaniry?",
+    wyjasnienie: "Rada centaura padła dopiero wtedy, gdy umierał od strzały. Koszula była na końcu, wiele lat później.",
+    elementy: ["Centaur Nessos przenosi Dejanirę", "Porwanie i strzała Heraklesa", "Rada umierającego centaura", "Krew schowana w flakoniku", "Koszula wyprana w krwi"] },
+];
 const ZESTAWY = {
-  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4,
-  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4],
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4, m5: RUNDY_M5,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4, ...RUNDY_M5],
 };
 
 let RUNDY = RUNDY_M1;
