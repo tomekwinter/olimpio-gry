@@ -80,7 +80,8 @@
   <div class="przyciski" style="flex-direction: column; align-items: center;">
     <button onclick="start('m1')">🌋 Narodziny świata (5 rund)</button>
     <button onclick="start('m2')">🏛 Bogowie olimpijscy (5 rund)</button>
-    <button onclick="start('all')">⚡ Wszystko naraz (10 rund)</button>
+    <button onclick="start('m3')">🌾 Bogowie ziemscy (5 rund)</button>
+    <button onclick="start('all')">⚡ Wszystko naraz (15 rund)</button>
   </div>
   <p class="info">Wskazówka: wybieraj zestaw z modułu, który masz już przeczytany!</p>
 </div>
@@ -99,7 +100,7 @@
 </div>
 <script>
 // Rundy: elementy podane w POPRAWNEJ kolejności (od najstarszego / od początku).
-// Fakty z modułów 1-2 (zweryfikowane z Parandowskim, rozdz. 2-3).
+// Fakty z modułów 1-3 (zweryfikowane z Parandowskim, rozdz. 2, 3 i 5).
 const RUNDY_M1 = [
   { tytul: "Władcy świata po kolei",
     opis: "Kto rządził światem najpierw, a kto potem? Od pierwszego władcy!",
@@ -144,7 +145,32 @@ const RUNDY_M2 = [
     wyjasnienie: "Wszystko zaczęło się od tego, że ludzie zaczęli czcić Psyche zamiast Afrodyty.",
     elementy: ["Ludzie modlą się do Psyche", "Eros się zakochuje", "Lampka i kropla oliwy", "Eros znika, Psyche cierpi", "Zaślubiny na Olimpie"] },
 ];
-const ZESTAWY = { m1: RUNDY_M1, m2: RUNDY_M2, all: [...RUNDY_M1, ...RUNDY_M2] };
+const RUNDY_M3 = [
+  { tytul: "Zguba Persefony",
+    opis: "Jak potoczyło się porwanie? Ułóż wydarzenia po kolei!",
+    wyjasnienie: "Najpierw był zakaz matki, potem zerwany narcyz, a Kiane próbowała pomóc dopiero w czasie ucieczki.",
+    elementy: ["Zakaz zrywania narcyzów", "Kwiat o stu głowach", "Porwanie na czarnych rumakach", "Kiane zmienia się w strumień", "Czeluść Tartaru"] },
+  { tytul: "Poszukiwania Demeter",
+    opis: "Droga zrozpaczonej matki: co było po czym?",
+    wyjasnienie: "Dziewięć dni szukania skończyło się w Eleuzis, a ogień w pałacu był już na samym końcu.",
+    elementy: ["Dziewięć dni z pochodnią", "Odpoczynek na Skale Smutku", "Spotkanie córek Keleosa", "Służba w pałacu Metaniry", "Ogień i objawienie bogini"] },
+  { tytul: "Powrót Persefony",
+    opis: "Jak bogowie odzyskali urodzaj? Ułóż po kolei!",
+    wyjasnienie: "Najpierw przyszedł głód, potem prawda od Słońca, a granat był na samym końcu, przy pożegnaniu.",
+    elementy: ["Głód na całej ziemi", "Słońce zdradza prawdę", "Hermes znajduje pieczarę", "Rozkaz Zeusa dla Hadesa", "Ziarnka jabłka granatu"] },
+  { tytul: "Smutki bożka Pana",
+    opis: "Dwie miłości i dwie pamiątki: co było po czym?",
+    wyjasnienie: "Najpierw uciekła Syrinks i powstała fujarka, a Pitys pokochał Pan dopiero potem.",
+    elementy: ["Miłość do Syrinks", "Zamiana w trzcinę", "Fujarka z siedmiu piszczałek", "Miłość do Pitys", "Pierwsza sosna"] },
+  { tytul: "Droga Asklepiosa",
+    opis: "Od sieroty do boga lekarza: ułóż wydarzenia po kolei!",
+    wyjasnienie: "Koza i pies opiekowali się nim jako niemowlęciem, do szkoły Chejrona trafił dopiero, gdy podrósł.",
+    elementy: ["Śmierć nimfy Koronis", "Opieka kozy i psa", "Szkoła centaura Chejrona", "Wskrzeszanie zmarłych", "Piorun Zeusa"] },
+];
+const ZESTAWY = {
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3],
+};
 
 let RUNDY = RUNDY_M1;
 let runda = 0, punkty = 0, probaWRundzie = 1, wybrany = null;

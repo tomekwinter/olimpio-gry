@@ -100,6 +100,7 @@
   <div class="przyciski" style="flex-direction: column; align-items: center;">
     <button onclick="start('m1')">🌋 Narodziny świata</button>
     <button onclick="start('m2')">🏛 Bogowie olimpijscy</button>
+    <button onclick="start('m3')">🌾 Bogowie ziemscy</button>
     <button onclick="start('all')">⚡ Wszystko naraz</button>
   </div>
   <p class="info">Wskazówka: wybieraj moduł, który masz już przeczytany!</p>
@@ -124,7 +125,7 @@
 // ---------------------------------------------------------------------------
 // TREŚĆ. Każda runda: litery słów + litery hasła = DOKŁADNIE kolumny x wiersze,
 // bo słowa się nie przecinają, a z reszty liter (czytanych wierszami) powstaje
-// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-2 (za Parandowskim).
+// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-3 (za Parandowskim).
 // ---------------------------------------------------------------------------
 const RUNDY_M1 = [
   { bohater: "Prometeusz", kolumny: 6, wiersze: 7, haslo: "OBROŃCA CZŁOWIEKA",
@@ -249,7 +250,67 @@ const RUNDY_M2 = [
     ] },
 ];
 
-const ZESTAWY = { m1: RUNDY_M1, m2: RUNDY_M2, all: [...RUNDY_M1, ...RUNDY_M2] };
+const RUNDY_M3 = [
+  { bohater: "Demeter", kolumny: 8, wiersze: 5, haslo: "GLEBA MATKA",
+    nagroda: "Imię Demeter znaczy gleba-matka: to ona jest urodzajną warstwą ziemi.",
+    slowa: [
+      { s: "KŁOSY", f: "Wieniec z kłosów na głowie to jej znak rozpoznawczy. Kłosy i maki to atrybuty jej i Persefony." },
+      { s: "URODZAJ", f: "Pani urodzajów: gdy odeszła od pól, zasiewy zmarniały i przyszedł głód." },
+      { s: "CERES", f: "Ceres to jej rzymskie imię." },
+      { s: "ELEUZIS", f: "W Eleuzis odpoczęła na Skale Smutku i została piastunką królewicza." },
+      { s: "GRANAT", f: "Ziarnka granatu zatrzymały jej córkę w podziemiu na trzy miesiące w roku." },
+    ] },
+  { bohater: "Persefona", kolumny: 8, wiersze: 5, haslo: "PANI PODZIEMI",
+    nagroda: "Persefona to pani podziemi: bogini śmierci, która na wiosnę wraca do matki.",
+    slowa: [
+      { s: "NARCYZ", f: "Kwiat zwodniczy, poświęcony bóstwom podziemnym. Zerwała go mimo zakazu." },
+      { s: "KIANE", f: "Rusałka, która próbowała ją ratować i rozpłynęła się w strumień." },
+      { s: "HADES", f: "Porwał ją na wozie zaprzężonym w czarne rumaki." },
+      { s: "TARTAR", f: "Czeluść Tartaru otwarła się na końcu tej podróży." },
+      { s: "KOSZYK", f: "Z jej trzcinowego koszyka wysypały się zerwane kwiaty." },
+    ] },
+  { bohater: "Nimfy", kolumny: 8, wiersze: 6, haslo: "PRZYJACIÓŁKI LUDZI",
+    nagroda: "Nimfy to przyjaciółki ludzi: kochają życie i brzydzą się złem.",
+    slowa: [
+      { s: "NAJADY", f: "Najady mieszkają w źródłach, strumieniach i rzekach." },
+      { s: "OREADY", f: "Oready mieszkają w górach. Uwaga: driady to lasy!" },
+      { s: "DRIADY", f: "Driady mieszkają wśród lasów, a hamadriady w samych drzewach." },
+      { s: "ARTEMIDA", f: "To ona zwołuje nimfy na nocne tańce." },
+      { s: "GROTA", f: "Groty nimf mają dwa wejścia: jedno dla ludzi, drugie dla bogów." },
+    ] },
+  { bohater: "Hestia", kolumny: 7, wiersze: 6, haslo: "OGNISKO DOMOWE",
+    nagroda: "Hestia to bogini domowego ogniska: jej świątynią jest każdy dom.",
+    slowa: [
+      { s: "HESTIA", f: "Najstarsza córka Kronosa i Rei, siostra Zeusa i Hery." },
+      { s: "WESTA", f: "Westa to jej rzymskie imię." },
+      { s: "OGIEŃ", f: "Sam jasny płomień był jakby wizerunkiem bogini." },
+      { s: "ŻAGIEW", f: "Koloniści zabierali żagiew z ogniska rodzinnego miasta." },
+      { s: "MEGARON", f: "Megaron to główna świetlica greckiego domu, gdzie stało ognisko." },
+    ] },
+  { bohater: "Pan", kolumny: 7, wiersze: 6, haslo: "STRACH PANICZNY",
+    nagroda: "Od imienia Pana mamy słowo panika: to on sieje strach paniczny w godzinie południa.",
+    slowa: [
+      { s: "SYRINKS", f: "Nimfa zamieniona w trzcinę. Z jej łodyg powstała fujarka." },
+      { s: "PITYS", f: "Strącona ze skały przez Boreasza. Wyrosła z niej pierwsza sosna." },
+      { s: "SOSNA", f: "Sosna to drzewo poświęcone Panowi." },
+      { s: "ARKADIA", f: "Arkadia, kraina pasterzy, to ojczyzna Pana." },
+      { s: "FLET", f: "Fujarka z siedmiu piszczałek nierównej długości nazywa się syringa." },
+    ] },
+  { bohater: "Asklepios", kolumny: 7, wiersze: 6, haslo: "LASKA Z WĘŻEM",
+    nagroda: "Laska z owiniętym wężem to znak Asklepiosa i do dziś symbol medycyny.",
+    slowa: [
+      { s: "CHEJRON", f: "Mądry centaur, który nauczył go medycyny." },
+      { s: "KORONIS", f: "Nimfa Koronis, jego matka, umarła przy jego narodzeniu." },
+      { s: "APOLLO", f: "Apollo był jego ojcem." },
+      { s: "PIORUN", f: "Zeus zabił go piorunem za wskrzeszanie zmarłych." },
+      { s: "KOGUT", f: "Po wyzdrowieniu składano mu w ofierze koguta." },
+    ] },
+];
+
+const ZESTAWY = {
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3],
+};
 const RUND_W_GRZE = 5;
 const KIERUNKI = [[0, 1], [1, 0], [1, 1], [-1, 1]];  // w prawo, w dół, na ukos
 
