@@ -101,6 +101,7 @@
     <button onclick="start('m1')">🌋 Narodziny świata</button>
     <button onclick="start('m2')">🏛 Bogowie olimpijscy</button>
     <button onclick="start('m3')">🌾 Bogowie ziemscy</button>
+    <button onclick="start('m4')">💀 Królestwo piekieł</button>
     <button onclick="start('all')">⚡ Wszystko naraz</button>
   </div>
   <p class="info">Wskazówka: wybieraj moduł, który masz już przeczytany!</p>
@@ -125,7 +126,7 @@
 // ---------------------------------------------------------------------------
 // TREŚĆ. Każda runda: litery słów + litery hasła = DOKŁADNIE kolumny x wiersze,
 // bo słowa się nie przecinają, a z reszty liter (czytanych wierszami) powstaje
-// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-3 (za Parandowskim).
+// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-4 (za Parandowskim).
 // ---------------------------------------------------------------------------
 const RUNDY_M1 = [
   { bohater: "Prometeusz", kolumny: 6, wiersze: 7, haslo: "OBROŃCA CZŁOWIEKA",
@@ -307,9 +308,67 @@ const RUNDY_M3 = [
     ] },
 ];
 
+
+const RUNDY_M4 = [
+  { bohater: "Charon", kolumny: 7, wiersze: 5, haslo: "PRZEWOŹNIK DUSZ",
+    nagroda: "Charon to przewoźnik dusz: bez obola nie przewiezie nikogo.",
+    slowa: [
+      { s: "OBOL", f: "Drobny miedziany pieniążek, jego zapłata za przewóz." },
+      { s: "STYKS", f: "Największa rzeka podziemia, opływa je dziewięć razy." },
+      { s: "ŁÓDŹ", f: "Stoi w czarnej łodzi i żerdzią odpycha dusze bez zapłaty." },
+      { s: "NOC", f: "Charon był synem Nocy, tak jak Tanatos i Hypnos." },
+      { s: "ŻERDŹ", f: "Żerdzią odpycha tłum dusz garnących się do brzegu." },
+    ] },
+  { bohater: "Cerber", kolumny: 5, wiersze: 9, haslo: "TRZY PASZCZE",
+    nagroda: "Cerber ma trzy paszcze, a nie cztery. To ulubiona pułapka testów!",
+    slowa: [
+      { s: "KERBEROS", f: "Greckie imię Cerbera. To ta sama postać, nie inna." },
+      { s: "CIASTKO", f: "Ciastko pieczone na miodzie wystarczy, żeby się uspokoił." },
+      { s: "STRAŻNIK", f: "Pilnuje, żeby nikt nie uciekł z podziemia na ziemię." },
+      { s: "MIÓD", f: "Ciastko musi być na miodzie: tak przekupywano psa." },
+      { s: "SZCZEKA", f: "Jego szczekanie słychać z daleka po mrocznych pustkowiach." },
+    ] },
+  { bohater: "Hades", kolumny: 8, wiersze: 5, haslo: "PAN PODZIEMIA",
+    nagroda: "Hades to pan podziemia, później zwany Plutonem, czyli rozdawcą bogactw.",
+    slowa: [
+      { s: "PLUTON", f: "Późniejsze imię Hadesa, znaczy rozdawca bogactw." },
+      { s: "WIDŁY", f: "W sztuce trzyma berło albo widły. Trójząb ma Posejdon!" },
+      { s: "CZAPKA", f: "Czapka z psiej skóry czyniła go niewidzialnym." },
+      { s: "BARAN", f: "Składano mu w ofierze barana o czarnym runie." },
+      { s: "KORONA", f: "Siedzi na złotym tronie w zębatej koronie." },
+    ] },
+  { bohater: "Orfeusz", kolumny: 8, wiersze: 6, haslo: "SPOJRZAŁ ZA SIEBIE",
+    nagroda: "Wystarczyło jedno spojrzenie za siebie i Orfeusz stracił Eurydykę na zawsze.",
+    slowa: [
+      { s: "LUTNIA", f: "Jedyna broń, jaką wziął do podziemia. Wystarczyła." },
+      { s: "TRACJA", f: "Był królem i śpiewakiem Tracji." },
+      { s: "EURYDYKA", f: "Jego żona, nimfa drzewna, zginęła od ukąszenia żmii." },
+      { s: "MENADY", f: "Obłąkane menady rozerwały jego ciało na sztuki." },
+      { s: "LESBOS", f: "Na tej wyspie zatrzymała się jego głowa, a na grobie powstała wyrocznia." },
+    ] },
+  { bohater: "Syzyf", kolumny: 5, wiersze: 9, haslo: "PRACA BEZ KOŃCA",
+    nagroda: "Praca syzyfowa to robota bez końca i bez efektu: kamień zawsze spada.",
+    slowa: [
+      { s: "KORYNT", f: "Syzyf był królem Koryntu i sam założył to miasto." },
+      { s: "TANATOS", f: "Bożka śmierci uwięził i zakuł w kajdany." },
+      { s: "KAMIEŃ", f: "Wtacza go pod górę, a głaz zawsze wyślizguje się tuż przed szczytem." },
+      { s: "PIWNICA", f: "Tam zamknął Tanatosa, a wtedy ludzie przestali umierać." },
+      { s: "PLOTKA", f: "Jego wadą były plotki: wygadał sekret Zeusa." },
+    ] },
+  { bohater: "Mojry", kolumny: 5, wiersze: 9, haslo: "PRZĘDĄ NASZ LOS",
+    nagroda: "Mojry przędą nić ludzkiego życia. Nawet bogowie muszą ulec Przeznaczeniu.",
+    slowa: [
+      { s: "KLOTO", f: "Pierwsza z trzech sióstr, córek Nocy." },
+      { s: "LACHEZIS", f: "Druga z Mojr, po rzymsku Parek." },
+      { s: "ATROPOS", f: "Najstarsza i nieubłagana: to ona przecina nić w godzinę śmierci." },
+      { s: "PARKI", f: "Rzymska nazwa Mojr." },
+      { s: "KĄDZIEL", f: "W sztuce trzymają kądziel, wagę albo zwój papirusu." },
+    ] },
+];
+
 const ZESTAWY = {
-  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3,
-  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3],
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4],
 };
 const RUND_W_GRZE = 5;
 const KIERUNKI = [[0, 1], [1, 0], [1, 1], [-1, 1]];  // w prawo, w dół, na ukos
