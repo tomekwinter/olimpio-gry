@@ -83,7 +83,8 @@
     <button onclick="start('m3')">🌾 Bogowie ziemscy (5 rund)</button>
     <button onclick="start('m4')">💀 Królestwo piekieł (5 rund)</button>
     <button onclick="start('m5')">💬 Powiedzenia (5 rund)</button>
-    <button onclick="start('all')">⚡ Wszystko naraz (25 rund)</button>
+    <button onclick="start('m6')">🍇 Dionizos i syleny (5 rund)</button>
+    <button onclick="start('all')">⚡ Wszystko naraz (30 rund)</button>
   </div>
   <p class="info">Wskazówka: wybieraj zestaw z modułu, który masz już przeczytany!</p>
 </div>
@@ -102,7 +103,7 @@
 </div>
 <script>
 // Rundy: elementy podane w POPRAWNEJ kolejności (od najstarszego / od początku).
-// Fakty z modułów 1-5 (zweryfikowane z Parandowskim, rozdz. 2, 3, 5, 7-10).
+// Fakty z modułów 1-6 (zweryfikowane z Parandowskim, rozdz. 2, 3, 5, 7-10).
 const RUNDY_M1 = [
   { tytul: "Władcy świata po kolei",
     opis: "Kto rządził światem najpierw, a kto potem? Od pierwszego władcy!",
@@ -213,9 +214,31 @@ const RUNDY_M5 = [
     wyjasnienie: "Rada centaura padła dopiero wtedy, gdy umierał od strzały. Dejanira schowała krew pod suknią i sięgnęła po nią długo później, gdy chciała być pewna miłości męża.",
     elementy: ["Centaur Nessos przenosi Dejanirę", "Porwanie i strzała Heraklesa", "Rada umierającego centaura", "Krew schowana w flakoniku", "Koszula wyprana w krwi"] },
 ];
+const RUNDY_M6 = [
+  { tytul: "Narodziny boga wina",
+    opis: "Od prośby Semele do wojny z gigantami. Co było po czym?",
+    wyjasnienie: "Semele najpierw prosi, dopiero potem płonie. Niemowlę trafia do nimf, a wojna z gigantami przychodzi wtedy, gdy Dionizos jest już pacholęciem.",
+    elementy: ["Prośba Semele do Zeusa", "Semele płonie od blasku boga", "Niemowlę u nimf góry Nysy", "Nauka u muz i Sylena", "Wojna z gigantami pod postacią lwa"] },
+  { tytul: "Piraci i delfiny",
+    opis: "Ułóż wydarzenia na pokładzie w kolejności, w jakiej się zdarzyły.",
+    wyjasnienie: "Kajdany opadają zaraz po związaniu jeńca, sternik ostrzega jako jedyny, a przemiana w delfiny jest na samym końcu.",
+    elementy: ["Porwanie młodzieńca w purpurze", "Kajdany same opadają", "Ostrzeżenie sternika", "Maszt zakwita winną latoroślą", "Rozbójnicy zamienieni w delfiny"] },
+  { tytul: "Od labiryntu do ślubu",
+    opis: "Droga Ariadny od Krety do wesela z bogiem. Co po czym?",
+    wyjasnienie: "Kłębek jest przed labiryntem, sen na Naksos przed przebudzeniem, a ślub z Dionizosem na samym końcu.",
+    elementy: ["Kłębek nici dla Tezeusza", "Zabicie Minotaura w labiryncie", "Ucieczka z Krety razem", "Sen na wyspie Naksos", "Ślub z Dionizosem"] },
+  { tytul: "Złoty dotyk Midasa",
+    opis: "Wszystko zaczęło się od uśpionego staruszka w ogrodzie.",
+    wyjasnienie: "Nagroda przyszła za gościnność wobec Sylena. Chleb w bryłce złota jest po życzeniu, a kąpiel w rzece dopiero na końcu.",
+    elementy: ["Sylen zasypia w ogrodzie", "Robotnicy wiążą go girlandami", "Midas gości bożka i odsyła go do Dionizosa", "Życzenie o złotym dotyku", "Chleb ciąży bryłką złota", "Kąpiel w rzece Paktolos"] },
+  { tytul: "Rok winiarski w Atenach",
+    opis: "Cztery święta Dionizosa. Ułóż je w kolejności roku!",
+    wyjasnienie: "Święta idą za pracą w winnicy: najpierw zbiór, potem wytłaczanie, próbowanie młodego wina, a na końcu największe święto z teatrem.",
+    elementy: ["Wiejskie Dionizje (winobranie)", "Lenaje (wytłaczanie wina)", "Antesterie (otwieranie beczek)", "Wielkie Dionizje (teatr)"] },
+];
 const ZESTAWY = {
-  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4, m5: RUNDY_M5,
-  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4, ...RUNDY_M5],
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4, m5: RUNDY_M5, m6: RUNDY_M6,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4, ...RUNDY_M5, ...RUNDY_M6],
 };
 
 let RUNDY = RUNDY_M1;

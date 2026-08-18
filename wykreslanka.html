@@ -103,6 +103,7 @@
     <button onclick="start('m3')">🌾 Bogowie ziemscy</button>
     <button onclick="start('m4')">💀 Królestwo piekieł</button>
     <button onclick="start('m5')">💬 Powiedzenia</button>
+    <button onclick="start('m6')">🍇 Dionizos i syleny</button>
     <button onclick="start('all')">⚡ Wszystko naraz</button>
   </div>
   <p class="info">Wskazówka: wybieraj moduł, który masz już przeczytany!</p>
@@ -127,7 +128,7 @@
 // ---------------------------------------------------------------------------
 // TREŚĆ. Każda runda: litery słów + litery hasła = DOKŁADNIE kolumny x wiersze,
 // bo słowa się nie przecinają, a z reszty liter (czytanych wierszami) powstaje
-// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-5 (za Parandowskim).
+// hasło. Wszystkie fakty pochodzą z lekcji modułów 1-6 (za Parandowskim).
 // ---------------------------------------------------------------------------
 const RUNDY_M1 = [
   { bohater: "Prometeusz", kolumny: 6, wiersze: 7, haslo: "OBROŃCA CZŁOWIEKA",
@@ -416,9 +417,57 @@ const RUNDY_M5 = [
     ] },
 ];
 
+const RUNDY_M6 = [
+  { bohater: "Dionizos", kolumny: 8, wiersze: 5, haslo: "DUSZA PRZYRODY",
+    nagroda: "Dionizos to dusza wszystkiego, co żyje: rządzi rodzeniem, śmiercią i zmartwychwstaniem, a objawia się w bujnej przyrodzie wiosny.",
+    slowa: [
+      { s: "TYRS", f: "Zielony pręt z szyszką u góry, znak rozpoznawczy orszaku." },
+      { s: "PANTERA", f: "Pantery w białych różach ciągnęły rydwan razem z lampartami i lwami." },
+      { s: "SEMELE", f: "Matka Dionizosa, córka króla Kadmosa, spłonęła od blasku Zeusa." },
+      { s: "NYSA", f: "Góra w Arabii Szczęśliwej, gdzie nimfy wychowały małego boga." },
+      { s: "RYDWAN", f: "Złocisty rydwan na purpurowych poduszkach, w potrójnym zaprzęgu." },
+    ] },
+  { bohater: "Sylen", kolumny: 8, wiersze: 5, haslo: "MĄDRY STARZEC",
+    nagroda: "Sylen to mądry starzec: wyglądał rubasznie, a znał przeszłość, rozumiał teraźniejszość i sięgał w przyszłość.",
+    slowa: [
+      { s: "OSIOŁ", f: "Jechał na ośle, przywiązany do niego girlandami kwiatów." },
+      { s: "MARSJAS", f: "Jeden z sylenów jońsko-frygijskich, ten od przegranego sporu z Apollinem." },
+      { s: "MIDAS", f: "Król, w którego ogrodzie Sylen usnął wśród kwiatów." },
+      { s: "GROTA", f: "Często zasypiał w grocie z dzbanem pod głową." },
+      { s: "KWIATY", f: "Boginki wiązały go wieńcami z kwiatów, a on się o to nie gniewał." },
+    ] },
+  { bohater: "Ariadna", kolumny: 7, wiersze: 6, haslo: "ŻONA DIONIZOSA",
+    nagroda: "Ariadna została żoną Dionizosa: porzucona przez Tezeusza, wyszła za mąż za boga na tej samej wyspie.",
+    slowa: [
+      { s: "NAKSOS", f: "Wyspa, na której Tezeusz zostawił śpiącą Ariadnę. Nie Rodos!" },
+      { s: "MINOS", f: "Król Krety i ojciec Ariadny." },
+      { s: "KŁĘBEK", f: "Kłębek nici, dzięki któremu Tezeusz wyszedł z labiryntu." },
+      { s: "TYGRYSY", f: "Bachantki zaniosły ją na rydwan zaprzężony w tygrysy." },
+      { s: "KRETA", f: "Wyspa, z której Ariadna uciekła razem z Tezeuszem." },
+    ] },
+  { bohater: "Midas", kolumny: 8, wiersze: 5, haslo: "ZŁOTA RĘKA",
+    nagroda: "Midas miał złotą rękę i właśnie to go zgubiło: złota nie da się zjeść ani wypić.",
+    slowa: [
+      { s: "PAKTOLOS", f: "Rzeka, w której zmył z siebie dar. Od tej pory znajdowano w niej złoto." },
+      { s: "CHLEB", f: "Kęs chleba zaciążył mu w ręce bryłką świecącego metalu." },
+      { s: "OGRÓD", f: "W jego ogrodzie robotnicy znaleźli śpiącego Sylena." },
+      { s: "SYLEN", f: "Za gościnne przyjęcie Sylena Dionizos obiecał spełnić każde życzenie." },
+      { s: "GIRLANDY", f: "Robotnicy związali bożka girlandami kwiatów i zaprowadzili do króla." },
+    ] },
+  { bohater: "Dionizje", kolumny: 9, wiersze: 5, haslo: "CZTERY ŚWIĘTA",
+    nagroda: "Cztery święta Dionizosa w Atenach: wiejskie Dionizje, Lenaje, Antesterie i Wielkie Dionizje.",
+    slowa: [
+      { s: "LENAJE", f: "Styczniowe święto wytłaczania wina." },
+      { s: "TEATR", f: "Od połowy VI wieku p.n.e. na Wielkich Dionizjach grano przedstawienia." },
+      { s: "DYTYRAMB", f: "Uroczysta pieśń śpiewana pierwszego dnia Wielkich Dionizjów." },
+      { s: "BLUSZCZ", f: "Uczestnicy szli ulicami uwieńczeni bluszczem, z kubkiem albo dzbanem wina." },
+      { s: "LENAJON", f: "Mała świątynia Dionizosa na południowym stoku Akropolu." },
+    ] },
+];
+
 const ZESTAWY = {
-  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4, m5: RUNDY_M5,
-  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4, ...RUNDY_M5],
+  m1: RUNDY_M1, m2: RUNDY_M2, m3: RUNDY_M3, m4: RUNDY_M4, m5: RUNDY_M5, m6: RUNDY_M6,
+  all: [...RUNDY_M1, ...RUNDY_M2, ...RUNDY_M3, ...RUNDY_M4, ...RUNDY_M5, ...RUNDY_M6],
 };
 const RUND_W_GRZE = 5;
 const KIERUNKI = [[0, 1], [1, 0], [1, 1], [-1, 1]];  // w prawo, w dół, na ukos
